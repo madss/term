@@ -1,5 +1,7 @@
 # term
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/madss/term.svg)](https://pkg.go.dev/github.com/madss/term) [![Go Report Card](https://goreportcard.com/badge/github.com/madss/term)](https://goreportcard.com/report/github.com/madss/term)
+
 Simple helpers for formatting terminal output
 
 ## Usage
