@@ -33,3 +33,42 @@
 //   - BrightCyan and BrightCyanBackground
 //   - BrightWhite and BrightWhiteBackground
 package term
+
+import (
+	"syscall"
+	"unsafe"
+)
+
+// Size returns the dimensions of the terminal.
+//
+// To get notified when the terminal is resized, use the os/signal package.
+//
+//	resize := make(chan os.Signal, 1)
+//	signal.Notify(resize, syscall.SIGWINCH)
+//	for {
+//		select {
+//		case <-resize:
+//			rows, cols := term.Size()
+//			// ...
+//		}
+//	}
+func Size() (rows, cols int) {
+	var size struct {
+		Rows    uint16
+		Cols    uint16
+		Xpixels uint16
+		Ypixels uint16
+	}
+
+	retCode, _, errno := syscall.Syscall(syscall.SYS_IOCTL,
+		uintptr(syscall.Stdin),
+		uintptr(syscall.TIOCGWINSZ),
+		uintptr(unsafe.Pointer(&size)),
+	)
+
+	if int(retCode) == -1 {
+		panic(errno)
+	}
+
+	return int(size.Rows), int(size.Cols)
+}
