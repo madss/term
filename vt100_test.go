@@ -6,11 +6,11 @@ import (
 )
 
 func TestEscapeSequenceAdd(t *testing.T) {
-	var attrs escapeSequence
-	attrs.Add(boldOn)
-	attrs.Add(redFg)
-	if expected := (escapeSequence{boldOn, redFg}); !reflect.DeepEqual(attrs, expected) {
-		t.Fatalf("attrs = %v, want %v", attrs, expected)
+	seq := escapeSequence{kind: 'm'}
+	seq.Add(boldOn)
+	seq.Add(redFg)
+	if expected := (escapeSequence{kind: 'm', attrs: []attribute{boldOn, redFg}}); !reflect.DeepEqual(seq, expected) {
+		t.Fatalf("seq = %v, want %v", seq.attrs, expected)
 	}
 }
 
@@ -19,30 +19,30 @@ func TestEscapeSequenceAdjust(t *testing.T) {
 		was, is  bool
 		expected escapeSequence
 	}{
-		{false, false, nil},
-		{false, true, escapeSequence{boldOn}},
-		{true, false, escapeSequence{boldOff}},
-		{true, true, nil},
+		{false, false, escapeSequence{kind: 'm'}},
+		{false, true, escapeSequence{kind: 'm', attrs: []attribute{boldOn}}},
+		{true, false, escapeSequence{kind: 'm', attrs: []attribute{boldOff}}},
+		{true, true, escapeSequence{kind: 'm'}},
 	} {
-		var attrs escapeSequence
-		attrs.Adjust(tc.was, tc.is, boldOn, boldOff)
-		if !reflect.DeepEqual(attrs, tc.expected) {
-			t.Fatalf("attrs.Adjust(%t, %t, ...) -> %v, want %v", tc.was, tc.is, attrs, tc.expected)
+		seq := escapeSequence{kind: 'm'}
+		seq.Adjust(tc.was, tc.is, boldOn, boldOff)
+		if !reflect.DeepEqual(seq, tc.expected) {
+			t.Fatalf("seq.Adjust(%t, %t, ...) -> %v, want %v", tc.was, tc.is, seq, tc.expected)
 		}
 	}
 }
 
 func TestEscapeSequenceBytes(t *testing.T) {
 	for _, tc := range []struct {
-		attrs    escapeSequence
+		seq      escapeSequence
 		expected []byte
 	}{
-		{nil, nil},
-		{escapeSequence{boldOn}, []byte("\033[1m")},
-		{escapeSequence{boldOn, redFg}, []byte("\033[1;31m")},
+		{escapeSequence{kind: 'm'}, nil},
+		{escapeSequence{kind: 'm', attrs: []attribute{boldOn}}, []byte("\033[1m")},
+		{escapeSequence{kind: 'm', attrs: []attribute{boldOn, redFg}}, []byte("\033[1;31m")},
 	} {
-		if got := tc.attrs.Bytes(); !reflect.DeepEqual(got, tc.expected) {
-			t.Fatalf("%v.Bytes() = %v, want %v", tc.attrs, got, tc.expected)
+		if got := tc.seq.Bytes(); !reflect.DeepEqual(got, tc.expected) {
+			t.Fatalf("%v.Bytes() = %v, want %v", tc.seq, got, tc.expected)
 		}
 	}
 }

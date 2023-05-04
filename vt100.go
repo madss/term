@@ -68,22 +68,25 @@ const (
 	brightWhiteBg   attribute = 107
 )
 
-type escapeSequence []attribute
-
-func (attrs *escapeSequence) Add(attr attribute) {
-	*attrs = append(*attrs, attr)
+type escapeSequence struct {
+	kind  byte
+	attrs []attribute
 }
 
-func (attrs *escapeSequence) Adjust(was, is bool, on, off attribute) {
+func (seq *escapeSequence) Add(attr attribute) {
+	seq.attrs = append(seq.attrs, attr)
+}
+
+func (seq *escapeSequence) Adjust(was, is bool, on, off attribute) {
 	if !was && is {
-		attrs.Add(on)
+		seq.Add(on)
 	} else if was && !is {
-		attrs.Add(off)
+		seq.Add(off)
 	}
 }
 
-func (attrs escapeSequence) Bytes() []byte {
-	if len(attrs) == 0 {
+func (seq *escapeSequence) Bytes() []byte {
+	if len(seq.attrs) == 0 {
 		return nil
 	}
 
@@ -91,12 +94,12 @@ func (attrs escapeSequence) Bytes() []byte {
 	b.Grow(16) // should be enough in must situations
 
 	b.WriteString("\033[")
-	for i := range attrs {
+	for i := range seq.attrs {
 		if i > 0 {
 			b.WriteByte(';')
 		}
-		b.WriteString(strconv.Itoa(int(attrs[i])))
+		b.WriteString(strconv.Itoa(int(seq.attrs[i])))
 	}
-	b.WriteString("m")
+	b.WriteByte(seq.kind)
 	return []byte(b.String())
 }

@@ -92,29 +92,29 @@ func (ctx *Context) Write(w io.Writer, data []byte) (int, error) {
 	return n, err
 }
 
-func diff(oldCtx, newCtx *Context) escapeSequence {
+func diff(oldCtx, newCtx *Context) *escapeSequence {
 	if oldCtx == nil {
 		oldCtx = &Context{}
 	}
 	if newCtx == nil {
 		newCtx = &Context{}
 	}
-	var attrs escapeSequence
-	attrs.Adjust(oldCtx.bold, newCtx.bold, boldOn, boldOff)
-	attrs.Adjust(oldCtx.faint, newCtx.faint, faintOn, faintOff)
-	attrs.Adjust(oldCtx.italic, newCtx.italic, italicOn, italicOff)
-	attrs.Adjust(oldCtx.underline, newCtx.underline, underlineOn, underlineOff)
-	attrs.Adjust(oldCtx.blink, newCtx.blink, blinkOn, blinkOff)
-	attrs.Adjust(oldCtx.negative, newCtx.negative, negativeOn, negativeOff)
-	attrs.Adjust(oldCtx.invisible, newCtx.invisible, invisibleOn, invisibleOff)
-	attrs.Adjust(oldCtx.strikeThrough, newCtx.strikeThrough, strikeThroughOn, strikeThroughOff)
+	seq := escapeSequence{kind: 'm'}
+	seq.Adjust(oldCtx.bold, newCtx.bold, boldOn, boldOff)
+	seq.Adjust(oldCtx.faint, newCtx.faint, faintOn, faintOff)
+	seq.Adjust(oldCtx.italic, newCtx.italic, italicOn, italicOff)
+	seq.Adjust(oldCtx.underline, newCtx.underline, underlineOn, underlineOff)
+	seq.Adjust(oldCtx.blink, newCtx.blink, blinkOn, blinkOff)
+	seq.Adjust(oldCtx.negative, newCtx.negative, negativeOn, negativeOff)
+	seq.Adjust(oldCtx.invisible, newCtx.invisible, invisibleOn, invisibleOff)
+	seq.Adjust(oldCtx.strikeThrough, newCtx.strikeThrough, strikeThroughOn, strikeThroughOff)
 	if oldCtx.foreground != newCtx.foreground {
-		attrs.Add(fgColors[newCtx.foreground])
+		seq.Add(fgColors[newCtx.foreground])
 	}
 	if oldCtx.background != newCtx.background {
-		attrs.Add(bgColors[newCtx.background])
+		seq.Add(bgColors[newCtx.background])
 	}
-	return attrs
+	return &seq
 }
 
 // An Option is a function that modifies a Context.
